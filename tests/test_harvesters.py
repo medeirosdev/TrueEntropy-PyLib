@@ -8,6 +8,8 @@
 # - Network harvester
 # - System harvester
 # - External harvester
+# - Weather harvester
+# - Radioactive harvester
 # - Base harvester interface
 #
 # =============================================================================
@@ -21,6 +23,8 @@ from trueentropy.harvesters.timing import TimingHarvester
 from trueentropy.harvesters.network import NetworkHarvester
 from trueentropy.harvesters.system import SystemHarvester
 from trueentropy.harvesters.external import ExternalHarvester
+from trueentropy.harvesters.weather import WeatherHarvester
+from trueentropy.harvesters.radioactive import RadioactiveHarvester
 
 
 class TestHarvestResult:
@@ -274,8 +278,91 @@ class TestBaseHarvesterInterface:
             SystemHarvester(),
             NetworkHarvester(),
             ExternalHarvester(),
+            WeatherHarvester(),
+            RadioactiveHarvester(),
         ]
         
         for h in harvesters:
             repr_str = repr(h)
             assert h.name in repr_str
+
+
+class TestWeatherHarvester:
+    """Test WeatherHarvester."""
+    
+    def test_name(self) -> None:
+        """Harvester should have correct name."""
+        harvester = WeatherHarvester()
+        assert harvester.name == "weather"
+    
+    def test_collect_returns_result(self) -> None:
+        """collect() should return HarvestResult."""
+        harvester = WeatherHarvester()
+        result = harvester.collect()
+        
+        assert isinstance(result, HarvestResult)
+    
+    def test_timeout_configuration(self) -> None:
+        """Harvester should respect timeout config."""
+        harvester = WeatherHarvester(timeout=3.0)
+        assert harvester.timeout == 3.0
+    
+    def test_api_key_masking(self) -> None:
+        """API key should be masked when accessed."""
+        harvester = WeatherHarvester(api_key="my_secret_api_key_12345")
+        masked = harvester.api_key
+        
+        # Should be partially masked
+        assert masked is not None
+        assert "..." in masked
+        assert "my_secret_api_key_12345" != masked
+    
+    def test_no_api_key_returns_none(self) -> None:
+        """api_key property should return None when not set."""
+        harvester = WeatherHarvester()
+        assert harvester.api_key is None
+
+
+class TestRadioactiveHarvester:
+    """Test RadioactiveHarvester."""
+    
+    def test_name(self) -> None:
+        """Harvester should have correct name."""
+        harvester = RadioactiveHarvester()
+        assert harvester.name == "radioactive"
+    
+    def test_collect_returns_result(self) -> None:
+        """collect() should return HarvestResult."""
+        harvester = RadioactiveHarvester()
+        result = harvester.collect()
+        
+        assert isinstance(result, HarvestResult)
+    
+    def test_timeout_configuration(self) -> None:
+        """Harvester should respect timeout config."""
+        harvester = RadioactiveHarvester(timeout=15.0)
+        assert harvester.timeout == 15.0
+    
+    def test_num_integers_configuration(self) -> None:
+        """Harvester should respect num_integers config."""
+        harvester = RadioactiveHarvester(num_integers=20)
+        assert harvester.num_integers == 20
+    
+    def test_num_integers_validation(self) -> None:
+        """num_integers should have valid range."""
+        harvester = RadioactiveHarvester()
+        
+        with pytest.raises(ValueError):
+            harvester.num_integers = 0
+        
+        with pytest.raises(ValueError):
+            harvester.num_integers = 1001
+    
+    def test_api_key_masking(self) -> None:
+        """API key should be masked when accessed."""
+        harvester = RadioactiveHarvester(api_key="12345678-abcd-efgh-ijkl")
+        masked = harvester.api_key
+        
+        assert masked is not None
+        assert "..." in masked
+

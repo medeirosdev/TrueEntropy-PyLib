@@ -10,6 +10,8 @@
 # - NetworkHarvester: Network latency measurements
 # - SystemHarvester: System state (RAM, processes, etc.)
 # - ExternalHarvester: External APIs (earthquakes, crypto prices)
+# - WeatherHarvester: Weather data (temperature, humidity, pressure)
+# - RadioactiveHarvester: random.org / ANU QRNG (quantum randomness)
 #
 # =============================================================================
 
@@ -25,6 +27,8 @@ from trueentropy.harvesters.timing import TimingHarvester
 from trueentropy.harvesters.network import NetworkHarvester
 from trueentropy.harvesters.system import SystemHarvester
 from trueentropy.harvesters.external import ExternalHarvester
+from trueentropy.harvesters.weather import WeatherHarvester
+from trueentropy.harvesters.radioactive import RadioactiveHarvester
 
 __all__ = [
     "BaseHarvester",
@@ -32,4 +36,6 @@ __all__ = [
     "NetworkHarvester",
     "SystemHarvester",
     "ExternalHarvester",
+    "WeatherHarvester",
+    "RadioactiveHarvester",
 ]
