@@ -339,6 +339,263 @@ class EntropyTap:
         # Scale and shift to desired mean and standard deviation
         return mu + sigma * z0
     
+    def triangular(
+        self, low: float = 0.0, high: float = 1.0, mode: float | None = None
+    ) -> float:
+        """
+        Generate a random float from the triangular distribution.
+        
+        The triangular distribution is a continuous probability distribution
+        with a lower limit, upper limit, and mode (peak).
+        
+        Args:
+            low: Lower limit (default: 0.0)
+            high: Upper limit (default: 1.0)
+            mode: Peak of the distribution. If None, defaults to midpoint.
+        
+        Returns:
+            Random float from the triangular distribution
+        
+        Raises:
+            ValueError: If low > high or mode is outside [low, high]
+        """
+        import math
+        
+        if low > high:
+            raise ValueError(f"triangular: low ({low}) must be <= high ({high})")
+        
+        if mode is None:
+            mode = (low + high) / 2.0
+        
+        if not (low <= mode <= high):
+            raise ValueError(
+                f"triangular: mode ({mode}) must be in [{low}, {high}]"
+            )
+        
+        # Handle degenerate case
+        if low == high:
+            return low
+        
+        u = self.random()
+        c = (mode - low) / (high - low)
+        
+        if u < c:
+            return low + math.sqrt(u * (high - low) * (mode - low))
+        else:
+            return high - math.sqrt((1 - u) * (high - low) * (high - mode))
+    
+    def exponential(self, lambd: float = 1.0) -> float:
+        """
+        Generate a random float from the exponential distribution.
+        
+        The exponential distribution describes time between events in a
+        Poisson process. It's commonly used to model waiting times.
+        
+        Args:
+            lambd: Rate parameter (1/mean). Must be positive.
+                   Note: Named 'lambd' to avoid conflict with Python keyword.
+        
+        Returns:
+            Random float from Exp(lambda)
+        
+        Raises:
+            ValueError: If lambd <= 0
+        """
+        import math
+        
+        if lambd <= 0:
+            raise ValueError(f"exponential: lambd ({lambd}) must be positive")
+        
+        # Inverse transform sampling
+        # If U ~ Uniform(0,1), then -ln(U)/lambda ~ Exp(lambda)
+        u = self.random()
+        while u == 0:  # Avoid log(0)
+            u = self.random()
+        
+        return -math.log(u) / lambd
+    
+    def weighted_choice(self, seq: Sequence[T], weights: Sequence[float]) -> T:
+        """
+        Return a random element from a sequence with weighted probabilities.
+        
+        Elements with higher weights are more likely to be selected.
+        
+        Args:
+            seq: A non-empty sequence
+            weights: Weights for each element (must be same length as seq)
+        
+        Returns:
+            A randomly selected element
+        
+        Raises:
+            ValueError: If seq and weights have different lengths
+            ValueError: If any weight is negative
+            ValueError: If all weights are zero
+            IndexError: If the sequence is empty
+        
+        Example:
+            >>> tap.weighted_choice(['rare', 'common', 'common'], [1, 10, 10])
+            'common'  # Most likely
+        """
+        if not seq:
+            raise IndexError("Cannot choose from an empty sequence")
+        
+        if len(seq) != len(weights):
+            raise ValueError(
+                f"weighted_choice: seq length ({len(seq)}) != "
+                f"weights length ({len(weights)})"
+            )
+        
+        if any(w < 0 for w in weights):
+            raise ValueError("weighted_choice: weights must be non-negative")
+        
+        total = sum(weights)
+        if total == 0:
+            raise ValueError("weighted_choice: at least one weight must be > 0")
+        
+        # Generate a random threshold in [0, total)
+        threshold = self.random() * total
+        
+        # Find which "bucket" the threshold falls into
+        cumulative = 0.0
+        for i, weight in enumerate(weights):
+            cumulative += weight
+            if threshold < cumulative:
+                return seq[i]
+        
+        # Fallback (shouldn't happen, but handles floating point edge cases)
+        return seq[-1]
+    
+    def random_uuid(self) -> str:
+        """
+        Generate a random UUID (version 4).
+        
+        UUID v4 uses random numbers for all significant bits,
+        making it ideal for unique identifiers.
+        
+        Returns:
+            A UUID string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+            where x is a random hex digit and y is one of 8, 9, a, or b.
+        
+        Example:
+            >>> tap.random_uuid()
+            'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+        """
+        # Generate 16 random bytes
+        raw = self.randbytes(16)
+        raw_list = list(raw)
+        
+        # Set version to 4 (0100 in high nibble of byte 6)
+        raw_list[6] = (raw_list[6] & 0x0F) | 0x40
+        
+        # Set variant to RFC 4122 (10xx in high bits of byte 8)
+        raw_list[8] = (raw_list[8] & 0x3F) | 0x80
+        
+        # Convert to hex string
+        hex_str = bytes(raw_list).hex()
+        
+        # Format as UUID: 8-4-4-4-12
+        return (
+            f"{hex_str[0:8]}-{hex_str[8:12]}-{hex_str[12:16]}-"
+            f"{hex_str[16:20]}-{hex_str[20:32]}"
+        )
+    
+    def random_token(self, length: int = 32, encoding: str = "hex") -> str:
+        """
+        Generate a random token string.
+        
+        Useful for API keys, session tokens, CSRF tokens, etc.
+        
+        Args:
+            length: Number of random bytes to use (default: 32)
+            encoding: Output encoding - 'hex' or 'base64' (default: 'hex')
+        
+        Returns:
+            A random token string
+        
+        Raises:
+            ValueError: If length <= 0 or encoding is invalid
+        
+        Example:
+            >>> tap.random_token(16, 'hex')
+            'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
+            >>> tap.random_token(16, 'base64')
+            'obLNGb5hFbJQ9Q4='
+        """
+        if length <= 0:
+            raise ValueError(f"random_token: length ({length}) must be positive")
+        
+        raw = self.randbytes(length)
+        
+        if encoding == "hex":
+            return raw.hex()
+        elif encoding == "base64":
+            import base64
+            return base64.urlsafe_b64encode(raw).decode("ascii")
+        else:
+            raise ValueError(
+                f"random_token: encoding must be 'hex' or 'base64', "
+                f"got '{encoding}'"
+            )
+    
+    def random_password(
+        self,
+        length: int = 16,
+        charset: str | None = None,
+        include_uppercase: bool = True,
+        include_lowercase: bool = True,
+        include_digits: bool = True,
+        include_symbols: bool = True
+    ) -> str:
+        """
+        Generate a secure random password.
+        
+        Args:
+            length: Password length (default: 16)
+            charset: Custom character set. If provided, overrides include_* flags.
+            include_uppercase: Include A-Z (default: True)
+            include_lowercase: Include a-z (default: True)
+            include_digits: Include 0-9 (default: True)
+            include_symbols: Include !@#$%^&*()_+-= (default: True)
+        
+        Returns:
+            A random password string
+        
+        Raises:
+            ValueError: If length <= 0 or no characters available
+        
+        Example:
+            >>> tap.random_password(12)
+            'Kx9#mP2$nL7@'
+            >>> tap.random_password(8, charset='abc123')
+            '2ab1c3a1'
+        """
+        if length <= 0:
+            raise ValueError(f"random_password: length ({length}) must be positive")
+        
+        if charset is not None:
+            if not charset:
+                raise ValueError("random_password: charset cannot be empty")
+            chars = charset
+        else:
+            chars = ""
+            if include_uppercase:
+                chars += "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+            if include_lowercase:
+                chars += "abcdefghijklmnopqrstuvwxyz"
+            if include_digits:
+                chars += "0123456789"
+            if include_symbols:
+                chars += "!@#$%^&*()_+-="
+            
+            if not chars:
+                raise ValueError(
+                    "random_password: at least one character type must be included"
+                )
+        
+        # Generate password by choosing random characters
+        return "".join(self.choice(chars) for _ in range(length))
+    
     # -------------------------------------------------------------------------
     # String Representation
     # -------------------------------------------------------------------------
