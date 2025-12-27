@@ -122,6 +122,7 @@ Where U₁, U₂ ~ Uniform(0, 1)
 
 **References:**
 - Box, G. E. P.; Muller, M. E. (1958)
+- https://www.statisticshowto.com/box-muller-transform-simple-definition/
 - https://en.wikipedia.org/wiki/Box%E2%80%93Muller_transform
 
 ### Exponential Distribution
@@ -237,3 +238,10 @@ mathematical_notation_here
 - Author (Year). "Title"
 - URL
 ```
+
+---
+
+## Author
+
+**Guilherme de Medeiros** - UNICAMP  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/guilhermedemedeiros/)

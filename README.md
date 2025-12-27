@@ -216,6 +216,11 @@ mypy src/
 
 MIT License - see [LICENSE](LICENSE) for details.
 
+## Author
+
+**Guilherme de Medeiros** - UNICAMP  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-0077B5?logo=linkedin&logoColor=white)](https://www.linkedin.com/in/guilhermedemedeiros/)
+
 ## Acknowledgments
 
 Inspired by:
