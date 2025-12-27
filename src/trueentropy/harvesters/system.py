@@ -84,10 +84,10 @@ class SystemHarvester(BaseHarvester):
         Returns:
             HarvestResult containing system state entropy
         """
-        # Attempt import of psutil
-        try:
-            import psutil
-        except ImportError:
+        # Check if psutil library is available
+        import importlib.util
+
+        if importlib.util.find_spec("psutil") is None:
             return HarvestResult(
                 data=b"",
                 entropy_bits=0,
@@ -97,7 +97,7 @@ class SystemHarvester(BaseHarvester):
             )
 
         # Collect system metrics
-        metrics = self._collect_metrics(psutil)
+        metrics = self._collect_metrics()
 
         # Convert to bytes
         data = self._metrics_to_bytes(metrics)
@@ -112,17 +112,14 @@ class SystemHarvester(BaseHarvester):
     # Private Methods
     # -------------------------------------------------------------------------
 
-    def _collect_metrics(self, psutil: object) -> list[tuple[str, int | float]]:
+    def _collect_metrics(self) -> list[tuple[str, int | float]]:
         """
         Collect various system metrics.
-
-        Args:
-            psutil: The imported psutil module
 
         Returns:
             List of (metric_name, value) tuples
         """
-        import psutil as ps  # For type hints
+        import psutil as ps
 
         metrics: list[tuple[str, int | float]] = []
 

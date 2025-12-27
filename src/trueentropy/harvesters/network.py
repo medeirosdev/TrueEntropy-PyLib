@@ -119,10 +119,10 @@ class NetworkHarvester(BaseHarvester):
         Returns:
             HarvestResult containing network timing entropy
         """
-        # Attempt import of requests library
-        try:
-            import requests
-        except ImportError:
+        # Check if requests library is available
+        import importlib.util
+
+        if importlib.util.find_spec("requests") is None:
             return HarvestResult(
                 data=b"",
                 entropy_bits=0,
@@ -132,7 +132,7 @@ class NetworkHarvester(BaseHarvester):
             )
 
         # Collect latency measurements
-        measurements = self._measure_latencies(requests)
+        measurements = self._measure_latencies()
 
         if not measurements:
             return HarvestResult(
@@ -156,17 +156,14 @@ class NetworkHarvester(BaseHarvester):
     # Private Methods
     # -------------------------------------------------------------------------
 
-    def _measure_latencies(self, requests_module: object) -> list[tuple[str, int]]:
+    def _measure_latencies(self) -> list[tuple[str, int]]:
         """
         Measure latency to each target server.
-
-        Args:
-            requests_module: The imported requests module
 
         Returns:
             List of (target, latency_ns) tuples for successful requests
         """
-        import requests  # Type ignore for the module passed in
+        import requests
 
         measurements: list[tuple[str, int]] = []
 

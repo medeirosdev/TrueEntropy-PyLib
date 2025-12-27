@@ -89,10 +89,10 @@ def save_pool(pool: EntropyPool, path: PathLike, include_checksum: bool = True) 
         _write_pool_state(f, state_data, include_checksum)
 
     # Set restrictive permissions on Unix systems
-    try:
+    import contextlib
+
+    with contextlib.suppress(OSError, AttributeError):
         os.chmod(path, 0o600)
-    except (OSError, AttributeError):
-        pass  # Windows or permission denied
 
 
 def load_pool(path: PathLike, verify_checksum: bool = True) -> EntropyPool:

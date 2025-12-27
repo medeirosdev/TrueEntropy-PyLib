@@ -89,12 +89,7 @@ class EntropyPool:
         # Initialize the pool with random data
         # We use os.urandom() as the initial seed because it provides
         # cryptographically secure random bytes from the OS
-        if seed is not None:
-            # Use provided seed (useful for testing with deterministic output)
-            initial = seed
-        else:
-            # Use OS-provided entropy for production use
-            initial = os.urandom(self.POOL_SIZE)
+        initial = seed if seed is not None else os.urandom(self.POOL_SIZE)
 
         # Expand seed to full pool size if needed
         self._pool: bytes = self._expand_to_pool_size(initial)
