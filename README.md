@@ -120,6 +120,25 @@ True random numbers from quantum phenomena:
 | `choice(seq)` | Returns random element from sequence |
 | `randbytes(n)` | Returns n random bytes |
 | `shuffle(seq)` | Shuffles sequence in-place |
+| `sample(seq, k)` | Returns k unique elements from sequence |
+
+### Distributions
+
+| Function | Description |
+|----------|-------------|
+| `uniform(a, b)` | Float uniformly distributed in [a, b] |
+| `gauss(mu, sigma)` | Gaussian/normal distribution |
+| `triangular(low, high, mode)` | Triangular distribution |
+| `exponential(lambd)` | Exponential distribution |
+| `weighted_choice(seq, weights)` | Weighted random selection |
+
+### Generators
+
+| Function | Description |
+|----------|-------------|
+| `random_uuid()` | UUID v4 (e.g., `f47ac10b-58cc-4372-...`) |
+| `random_token(length, encoding)` | Hex or base64 token |
+| `random_password(length, ...)` | Secure password with configurable charset |
 
 ### Management Functions
 
