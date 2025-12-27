@@ -44,7 +44,6 @@ dependencies = [
     "psutil>=5.8.0",
 ]
 
-[project.optional-dependencies]
 dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
@@ -55,21 +54,25 @@ dev = [
     "types-requests",
     "types-psutil",
 ]
+cython = [
+    "cython>=3.0",
+    "setuptools>=65.0",
+]
 docs = [
     "mkdocs>=1.5",
     "mkdocs-material>=9.0",
     "mkdocstrings[python]>=0.24",
 ]
 all = [
-    "trueentropy[dev,docs]",
+    "trueentropy[dev,docs,cython]",
 ]
 
 [project.urls]
-Homepage = "https://github.com/trueentropy/trueentropy"
-Documentation = "https://trueentropy.github.io/trueentropy"
-Repository = "https://github.com/trueentropy/trueentropy"
-Issues = "https://github.com/trueentropy/trueentropy/issues"
-Changelog = "https://github.com/trueentropy/trueentropy/blob/main/CHANGELOG.md"
+Homepage = "https://github.com/medeirosdev/TrueEntropy-PyLib"
+Documentation = "https://github.com/medeirosdev/TrueEntropy-PyLib#readme"
+Repository = "https://github.com/medeirosdev/TrueEntropy-PyLib"
+Issues = "https://github.com/medeirosdev/TrueEntropy-PyLib/issues"
+Changelog = "https://github.com/medeirosdev/TrueEntropy-PyLib/blob/main/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/trueentropy"]
