@@ -14,6 +14,8 @@
 #
 # =============================================================================
 
+from __future__ import annotations
+
 """Tests for the entropy harvesters."""
 
 import pytest

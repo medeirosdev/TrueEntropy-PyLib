@@ -12,6 +12,8 @@
 #
 # =============================================================================
 
+from __future__ import annotations
+
 """Tests for the EntropyPool class."""
 
 import threading
