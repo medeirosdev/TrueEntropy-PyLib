@@ -322,6 +322,42 @@ class EntropyPool:
         return result[:self.POOL_SIZE]
     
     # -------------------------------------------------------------------------
+    # Persistence Support
+    # -------------------------------------------------------------------------
+    
+    def _get_state_for_persistence(self) -> dict:
+        """
+        Get the pool state for persistence.
+        
+        Returns a dictionary containing all data needed to restore
+        the pool state later.
+        
+        Returns:
+            Dictionary with pool state data
+        """
+        with self._lock:
+            return {
+                "state": self._pool,
+                "entropy_bits": self._entropy_bits,
+                "total_fed": self._total_fed,
+                "total_extracted": self._total_extracted,
+            }
+    
+    def _restore_state_from_persistence(self, state_data: dict) -> None:
+        """
+        Restore pool state from persistence data.
+        
+        Args:
+            state_data: Dictionary from _get_state_for_persistence()
+        """
+        with self._lock:
+            self._pool = state_data["state"]
+            self._entropy_bits = state_data["entropy_bits"]
+            self._total_fed = state_data["total_fed"]
+            self._total_extracted = state_data["total_extracted"]
+            self._last_feed_time = time.time()
+    
+    # -------------------------------------------------------------------------
     # String Representation
     # -------------------------------------------------------------------------
     
