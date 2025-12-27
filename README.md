@@ -13,6 +13,8 @@ TrueEntropy harvests chaos from the physical world to generate truly random numb
 - **Network Latency** - The "weather" of internet infrastructure  
 - **System State** - RAM, processes, and hardware fluctuations
 - **External APIs** - Seismic activity (USGS), cryptocurrency prices
+- **Weather Data** - Temperature, humidity, pressure from OpenWeatherMap/wttr.in
+- **Quantum Randomness** - Atmospheric noise (random.org) and quantum vacuum fluctuations (ANU QRNG)
 
 All entropy sources are mixed using SHA-256 cryptographic hashing, ensuring uniform distribution and unpredictability.
 
@@ -88,10 +90,23 @@ Samples volatile system metrics:
 - CPU usage percentages
 - System uptime with high precision
 
-### External APIs (Optional)
+### External APIs
 Fetches real-world data:
 - **USGS Earthquake API** - Latest seismic magnitude readings
-- **Cryptocurrency prices** - Bitcoin price with 8 decimal precision
+- **Cryptocurrency prices** - Bitcoin/Ethereum prices with high precision
+
+### Weather Data
+Collects meteorological data from multiple cities:
+- Temperature, feels-like, min/max
+- Humidity and atmospheric pressure
+- Wind speed and direction
+- Cloud coverage and visibility
+- Supports OpenWeatherMap (with API key) or wttr.in (no key required)
+
+### Quantum Randomness
+True random numbers from quantum phenomena:
+- **random.org** - Atmospheric noise from radio receivers
+- **ANU QRNG** - Quantum vacuum fluctuations (fallback)
 
 ## API Reference
 
