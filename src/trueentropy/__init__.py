@@ -242,6 +242,146 @@ def sample(seq: Sequence[T], k: int) -> list[T]:
     return _tap.sample(seq, k)
 
 
+def uniform(a: float, b: float) -> float:
+    """
+    Generate a random float N such that a <= N <= b.
+    
+    Args:
+        a: Lower bound
+        b: Upper bound
+    
+    Returns:
+        Random float in [a, b]
+    """
+    return _tap.uniform(a, b)
+
+
+def gauss(mu: float = 0.0, sigma: float = 1.0) -> float:
+    """
+    Generate a random float from the Gaussian (normal) distribution.
+    
+    Args:
+        mu: Mean of the distribution (default: 0.0)
+        sigma: Standard deviation (default: 1.0)
+    
+    Returns:
+        Random float from N(mu, sigma^2)
+    """
+    return _tap.gauss(mu, sigma)
+
+
+def triangular(low: float = 0.0, high: float = 1.0, mode: float | None = None) -> float:
+    """
+    Generate a random float from the triangular distribution.
+    
+    Args:
+        low: Lower limit (default: 0.0)
+        high: Upper limit (default: 1.0)
+        mode: Peak of the distribution. If None, defaults to midpoint.
+    
+    Returns:
+        Random float from the triangular distribution
+    """
+    return _tap.triangular(low, high, mode)
+
+
+def exponential(lambd: float = 1.0) -> float:
+    """
+    Generate a random float from the exponential distribution.
+    
+    Args:
+        lambd: Rate parameter (1/mean). Must be positive.
+    
+    Returns:
+        Random float from Exp(lambda)
+    """
+    return _tap.exponential(lambd)
+
+
+def weighted_choice(seq: Sequence[T], weights: Sequence[float]) -> T:
+    """
+    Return a random element from a sequence with weighted probabilities.
+    
+    Elements with higher weights are more likely to be selected.
+    
+    Args:
+        seq: A non-empty sequence
+        weights: Weights for each element (must be same length as seq)
+    
+    Returns:
+        A randomly selected element
+    
+    Example:
+        >>> trueentropy.weighted_choice(['rare', 'common'], [1, 10])
+        'common'  # Most likely
+    """
+    return _tap.weighted_choice(seq, weights)
+
+
+def random_uuid() -> str:
+    """
+    Generate a random UUID (version 4).
+    
+    Returns:
+        A UUID string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
+    
+    Example:
+        >>> trueentropy.random_uuid()
+        'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+    """
+    return _tap.random_uuid()
+
+
+def random_token(length: int = 32, encoding: str = "hex") -> str:
+    """
+    Generate a random token string.
+    
+    Args:
+        length: Number of random bytes to use (default: 32)
+        encoding: Output encoding - 'hex' or 'base64' (default: 'hex')
+    
+    Returns:
+        A random token string
+    
+    Example:
+        >>> trueentropy.random_token(16, 'hex')
+        'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
+    """
+    return _tap.random_token(length, encoding)
+
+
+def random_password(
+    length: int = 16,
+    charset: str | None = None,
+    include_uppercase: bool = True,
+    include_lowercase: bool = True,
+    include_digits: bool = True,
+    include_symbols: bool = True
+) -> str:
+    """
+    Generate a secure random password.
+    
+    Args:
+        length: Password length (default: 16)
+        charset: Custom character set (overrides include_* flags)
+        include_uppercase: Include A-Z (default: True)
+        include_lowercase: Include a-z (default: True)
+        include_digits: Include 0-9 (default: True)
+        include_symbols: Include !@#$%^&*()_+-= (default: True)
+    
+    Returns:
+        A random password string
+    
+    Example:
+        >>> trueentropy.random_password(12)
+        'Kx9#mP2$nL7@'
+    """
+    return _tap.random_password(
+        length, charset, include_uppercase, include_lowercase,
+        include_digits, include_symbols
+    )
+
+
 # =============================================================================
 # PUBLIC API - Entropy Management
 # =============================================================================
@@ -384,6 +524,16 @@ __all__ = [
     "randbytes",
     "shuffle",
     "sample",
+    # Distributions
+    "uniform",
+    "gauss",
+    "triangular",
+    "exponential",
+    "weighted_choice",
+    # Generators
+    "random_uuid",
+    "random_token",
+    "random_password",
     # Entropy management
     "health",
     "feed",
