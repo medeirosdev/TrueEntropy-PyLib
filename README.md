@@ -9,10 +9,10 @@
 
 TrueEntropy harvests chaos from the physical world to generate truly random numbers. Unlike pseudo-random number generators (PRNGs) that use deterministic algorithms, TrueEntropy collects entropy from:
 
-- ⏱️ **CPU Timing Jitter** - Nanosecond variations in code execution
-- 🌐 **Network Latency** - The "weather" of internet infrastructure  
-- 💻 **System State** - RAM, processes, and hardware fluctuations
-- 🌍 **External APIs** - Seismic activity (USGS), cryptocurrency prices
+- **CPU Timing Jitter** - Nanosecond variations in code execution
+- **Network Latency** - The "weather" of internet infrastructure  
+- **System State** - RAM, processes, and hardware fluctuations
+- **External APIs** - Seismic activity (USGS), cryptocurrency prices
 
 All entropy sources are mixed using SHA-256 cryptographic hashing, ensuring uniform distribution and unpredictability.
 
@@ -118,37 +118,37 @@ Fetches real-world data:
 ## How It Works
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    ENTROPY HARVESTERS                        │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐   │
-│  │  Timing  │ │ Network  │ │  System  │ │   External   │   │
-│  │  Jitter  │ │ Latency  │ │  State   │ │     APIs     │   │
-│  └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────┬───────┘   │
-│       │            │            │              │            │
-│       └────────────┴─────┬──────┴──────────────┘            │
-│                          ▼                                   │
-│                   ┌─────────────┐                           │
-│                   │    MIXER    │  SHA-256 Hashing          │
-│                   │  (Whitening)│  Avalanche Effect         │
-│                   └──────┬──────┘                           │
-│                          ▼                                   │
-│              ┌───────────────────────┐                      │
-│              │     ENTROPY POOL      │  4096 bits           │
-│              │   (Accumulated State) │  Thread-safe         │
-│              └───────────┬───────────┘                      │
-│                          ▼                                   │
-│                   ┌─────────────┐                           │
-│                   │  EXTRACTOR  │  Secure extraction        │
-│                   │    (Tap)    │  Depletion protection     │
-│                   └──────┬──────┘                           │
-│                          ▼                                   │
-│         ┌────────────────┴────────────────┐                 │
-│         ▼                ▼                ▼                 │
-│   ┌──────────┐    ┌──────────┐    ┌──────────┐             │
-│   │  Float   │    │ Integer  │    │  Bytes   │             │
-│   │ [0.0,1.0)│    │  [a, b]  │    │    n     │             │
-│   └──────────┘    └──────────┘    └──────────┘             │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                    ENTROPY HARVESTERS                        |
+|  +----------+ +----------+ +----------+ +--------------+    |
+|  |  Timing  | | Network  | |  System  | |   External   |    |
+|  |  Jitter  | | Latency  | |  State   | |     APIs     |    |
+|  +----+-----+ +----+-----+ +----+-----+ +------+-------+    |
+|       |            |            |              |            |
+|       +------------+-----+------+--------------+            |
+|                          v                                  |
+|                   +-----------+                             |
+|                   |   MIXER   |  SHA-256 Hashing            |
+|                   | (Whitening)|  Avalanche Effect          |
+|                   +-----+-----+                             |
+|                         v                                   |
+|              +-----------------------+                      |
+|              |     ENTROPY POOL      |  4096 bits           |
+|              |   (Accumulated State) |  Thread-safe         |
+|              +-----------+-----------+                      |
+|                          v                                  |
+|                   +-----------+                             |
+|                   | EXTRACTOR |  Secure extraction          |
+|                   |   (Tap)   |  Depletion protection       |
+|                   +-----+-----+                             |
+|                         v                                   |
+|         +---------------+--------------+                    |
+|         v               v              v                    |
+|   +----------+    +----------+    +----------+              |
+|   |  Float   |    | Integer  |    |  Bytes   |              |
+|   | [0.0,1.0)|    |  [a, b]  |    |    n     |              |
+|   +----------+    +----------+    +----------+              |
++-------------------------------------------------------------+
 ```
 
 ## Security Considerations
@@ -163,8 +163,8 @@ Contributions are welcome! Please read our [Contributing Guide](CONTRIBUTING.md)
 
 ```bash
 # Clone the repository
-git clone https://github.com/trueentropy/trueentropy.git
-cd trueentropy
+git clone https://github.com/medeirosdev/TrueEntropy-PyLib.git
+cd TrueEntropy-PyLib
 
 # Install development dependencies
 pip install -e ".[dev]"
@@ -191,4 +191,4 @@ Inspired by:
 
 ---
 
-**TrueEntropy** - *Because the universe is the best random number generator.* 🌌
+**TrueEntropy** - *Because the universe is the best random number generator.*
