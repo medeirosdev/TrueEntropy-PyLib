@@ -75,6 +75,66 @@ for _ in range(1000):
 trueentropy.stop_collector()
 ```
 
+## Advanced Features
+
+### Async Support
+
+```python
+import asyncio
+from trueentropy import aio
+
+async def main():
+    value = await aio.random()
+    uuid = await aio.random_uuid()
+    password = await aio.random_password(16)
+
+asyncio.run(main())
+```
+
+### Pool Persistence
+
+Save and restore entropy pool state between runs:
+
+```python
+from trueentropy import get_pool
+from trueentropy.persistence import save_pool, load_pool
+
+# Save current pool state
+save_pool(get_pool(), "entropy_state.bin")
+
+# Later: restore the pool
+pool = load_pool("entropy_state.bin")
+```
+
+### Multiple Pools
+
+Isolated entropy pools for different purposes:
+
+```python
+from trueentropy.pools import PoolManager
+
+manager = PoolManager()
+manager.create("crypto")   # For security-critical operations
+manager.create("gaming")   # For game mechanics
+
+secure_bytes = manager.randbytes("crypto", 32)
+dice_roll = manager.randint("gaming", 1, 6)
+```
+
+### Cython Acceleration
+
+Optional C-level performance (10-50x faster for some operations):
+
+```bash
+pip install -e ".[cython]"
+python setup.py build_ext --inplace
+```
+
+```python
+from trueentropy.accel import is_accelerated
+print(is_accelerated())  # True if compiled
+```
+
 ## Entropy Sources
 
 ### Timing Jitter
