@@ -47,7 +47,8 @@ __license__ = "MIT"
 # -----------------------------------------------------------------------------
 # Type Imports (for type hints)
 # -----------------------------------------------------------------------------
-from typing import TYPE_CHECKING, Any, MutableSequence, Sequence, TypeVar
+from collections.abc import MutableSequence, Sequence
+from typing import TYPE_CHECKING, Any, TypeVar
 
 if TYPE_CHECKING:
     pass
@@ -55,9 +56,9 @@ if TYPE_CHECKING:
 # -----------------------------------------------------------------------------
 # Internal Module Imports
 # -----------------------------------------------------------------------------
+from trueentropy.health import HealthStatus, entropy_health
 from trueentropy.pool import EntropyPool
 from trueentropy.tap import EntropyTap
-from trueentropy.health import entropy_health, HealthStatus
 
 # -----------------------------------------------------------------------------
 # Type Variables for Generic Functions
@@ -85,14 +86,14 @@ _collector_running: bool = False
 def random() -> float:
     """
     Generate a random floating-point number in the range [0.0, 1.0).
-    
+
     This function extracts entropy from the pool and converts it to a
     uniformly distributed float. The distribution is uniform, meaning
     all values in the range are equally likely.
-    
+
     Returns:
         A float value where 0.0 <= value < 1.0
-    
+
     Example:
         >>> import trueentropy
         >>> value = trueentropy.random()
@@ -105,19 +106,19 @@ def random() -> float:
 def randint(a: int, b: int) -> int:
     """
     Generate a random integer N such that a <= N <= b.
-    
+
     Both endpoints are inclusive. The distribution is uniform.
-    
+
     Args:
         a: The lower bound (inclusive)
         b: The upper bound (inclusive)
-    
+
     Returns:
         A random integer in the range [a, b]
-    
+
     Raises:
         ValueError: If a > b
-    
+
     Example:
         >>> import trueentropy
         >>> dice = trueentropy.randint(1, 6)
@@ -130,13 +131,13 @@ def randint(a: int, b: int) -> int:
 def randbool() -> bool:
     """
     Generate a random boolean value (True or False).
-    
+
     This is equivalent to a fair coin flip. Each outcome has
     exactly 50% probability.
-    
+
     Returns:
         True or False with equal probability
-    
+
     Example:
         >>> import trueentropy
         >>> coin = trueentropy.randbool()
@@ -149,18 +150,18 @@ def randbool() -> bool:
 def choice(seq: Sequence[T]) -> T:
     """
     Return a random element from a non-empty sequence.
-    
+
     Each element has an equal probability of being selected.
-    
+
     Args:
         seq: A non-empty sequence (list, tuple, string, etc.)
-    
+
     Returns:
         A randomly selected element from the sequence
-    
+
     Raises:
         IndexError: If the sequence is empty
-    
+
     Example:
         >>> import trueentropy
         >>> colors = ["red", "green", "blue"]
@@ -174,20 +175,20 @@ def choice(seq: Sequence[T]) -> T:
 def randbytes(n: int) -> bytes:
     """
     Generate n random bytes.
-    
+
     This function extracts raw entropy from the pool and returns it
     as a bytes object. Useful for generating cryptographic keys,
     tokens, or other binary data.
-    
+
     Args:
         n: The number of bytes to generate (must be positive)
-    
+
     Returns:
         A bytes object of length n
-    
+
     Raises:
         ValueError: If n is not positive
-    
+
     Example:
         >>> import trueentropy
         >>> secret = trueentropy.randbytes(32)
@@ -200,13 +201,13 @@ def randbytes(n: int) -> bytes:
 def shuffle(seq: MutableSequence[Any]) -> None:
     """
     Shuffle a mutable sequence in-place.
-    
+
     Uses the Fisher-Yates shuffle algorithm with true random numbers
     to ensure a uniform distribution of permutations.
-    
+
     Args:
         seq: A mutable sequence (list) to shuffle in-place
-    
+
     Example:
         >>> import trueentropy
         >>> cards = list(range(1, 53))
@@ -220,19 +221,19 @@ def shuffle(seq: MutableSequence[Any]) -> None:
 def sample(seq: Sequence[T], k: int) -> list[T]:
     """
     Return a k-length list of unique elements from the sequence.
-    
+
     Used for random sampling without replacement.
-    
+
     Args:
         seq: A sequence to sample from
         k: Number of unique elements to select
-    
+
     Returns:
         A list of k unique elements from the sequence
-    
+
     Raises:
         ValueError: If k is larger than the sequence length
-    
+
     Example:
         >>> import trueentropy
         >>> lottery = trueentropy.sample(range(1, 61), 6)
@@ -245,11 +246,11 @@ def sample(seq: Sequence[T], k: int) -> list[T]:
 def uniform(a: float, b: float) -> float:
     """
     Generate a random float N such that a <= N <= b.
-    
+
     Args:
         a: Lower bound
         b: Upper bound
-    
+
     Returns:
         Random float in [a, b]
     """
@@ -259,11 +260,11 @@ def uniform(a: float, b: float) -> float:
 def gauss(mu: float = 0.0, sigma: float = 1.0) -> float:
     """
     Generate a random float from the Gaussian (normal) distribution.
-    
+
     Args:
         mu: Mean of the distribution (default: 0.0)
         sigma: Standard deviation (default: 1.0)
-    
+
     Returns:
         Random float from N(mu, sigma^2)
     """
@@ -273,12 +274,12 @@ def gauss(mu: float = 0.0, sigma: float = 1.0) -> float:
 def triangular(low: float = 0.0, high: float = 1.0, mode: float | None = None) -> float:
     """
     Generate a random float from the triangular distribution.
-    
+
     Args:
         low: Lower limit (default: 0.0)
         high: Upper limit (default: 1.0)
         mode: Peak of the distribution. If None, defaults to midpoint.
-    
+
     Returns:
         Random float from the triangular distribution
     """
@@ -288,10 +289,10 @@ def triangular(low: float = 0.0, high: float = 1.0, mode: float | None = None) -
 def exponential(lambd: float = 1.0) -> float:
     """
     Generate a random float from the exponential distribution.
-    
+
     Args:
         lambd: Rate parameter (1/mean). Must be positive.
-    
+
     Returns:
         Random float from Exp(lambda)
     """
@@ -301,16 +302,16 @@ def exponential(lambd: float = 1.0) -> float:
 def weighted_choice(seq: Sequence[T], weights: Sequence[float]) -> T:
     """
     Return a random element from a sequence with weighted probabilities.
-    
+
     Elements with higher weights are more likely to be selected.
-    
+
     Args:
         seq: A non-empty sequence
         weights: Weights for each element (must be same length as seq)
-    
+
     Returns:
         A randomly selected element
-    
+
     Example:
         >>> trueentropy.weighted_choice(['rare', 'common'], [1, 10])
         'common'  # Most likely
@@ -321,10 +322,10 @@ def weighted_choice(seq: Sequence[T], weights: Sequence[float]) -> T:
 def random_uuid() -> str:
     """
     Generate a random UUID (version 4).
-    
+
     Returns:
         A UUID string in the format 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'
-    
+
     Example:
         >>> trueentropy.random_uuid()
         'f47ac10b-58cc-4372-a567-0e02b2c3d479'
@@ -335,14 +336,14 @@ def random_uuid() -> str:
 def random_token(length: int = 32, encoding: str = "hex") -> str:
     """
     Generate a random token string.
-    
+
     Args:
         length: Number of random bytes to use (default: 32)
         encoding: Output encoding - 'hex' or 'base64' (default: 'hex')
-    
+
     Returns:
         A random token string
-    
+
     Example:
         >>> trueentropy.random_token(16, 'hex')
         'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6'
@@ -356,11 +357,11 @@ def random_password(
     include_uppercase: bool = True,
     include_lowercase: bool = True,
     include_digits: bool = True,
-    include_symbols: bool = True
+    include_symbols: bool = True,
 ) -> str:
     """
     Generate a secure random password.
-    
+
     Args:
         length: Password length (default: 16)
         charset: Custom character set (overrides include_* flags)
@@ -368,17 +369,16 @@ def random_password(
         include_lowercase: Include a-z (default: True)
         include_digits: Include 0-9 (default: True)
         include_symbols: Include !@#$%^&*()_+-= (default: True)
-    
+
     Returns:
         A random password string
-    
+
     Example:
         >>> trueentropy.random_password(12)
         'Kx9#mP2$nL7@'
     """
     return _tap.random_password(
-        length, charset, include_uppercase, include_lowercase,
-        include_digits, include_symbols
+        length, charset, include_uppercase, include_lowercase, include_digits, include_symbols
     )
 
 
@@ -390,16 +390,16 @@ def random_password(
 def health() -> HealthStatus:
     """
     Get the current health status of the entropy pool.
-    
+
     Returns a dictionary containing:
     - score: 0-100 indicating entropy quality
     - status: "healthy", "degraded", or "critical"
     - entropy_bits: Estimated bits of entropy in the pool
     - recommendation: Suggested action if health is low
-    
+
     Returns:
         A HealthStatus TypedDict with pool health information
-    
+
     Example:
         >>> import trueentropy
         >>> status = trueentropy.health()
@@ -412,14 +412,14 @@ def health() -> HealthStatus:
 def feed(data: bytes) -> None:
     """
     Manually feed entropy into the pool.
-    
+
     This allows you to add your own entropy sources to the pool.
     The data will be mixed using SHA-256 hashing to ensure it
     properly contributes to the pool state.
-    
+
     Args:
         data: Raw bytes to add to the entropy pool
-    
+
     Example:
         >>> import trueentropy
         >>> # Add some external entropy (e.g., from a hardware RNG)
@@ -432,14 +432,14 @@ def feed(data: bytes) -> None:
 def start_collector(interval: float = 1.0) -> None:
     """
     Start the background entropy collector thread.
-    
+
     When running, the collector periodically harvests entropy from
     all available sources and feeds it into the pool. This ensures
     the pool stays full even during heavy random number generation.
-    
+
     Args:
         interval: Seconds between collection cycles (default: 1.0)
-    
+
     Example:
         >>> import trueentropy
         >>> trueentropy.start_collector(interval=2.0)
@@ -447,11 +447,12 @@ def start_collector(interval: float = 1.0) -> None:
         >>> trueentropy.stop_collector()
     """
     global _collector_running
-    
+
     if _collector_running:
         return  # Already running
-    
+
     from trueentropy.collector import start_background_collector
+
     start_background_collector(_pool, interval)
     _collector_running = True
 
@@ -459,20 +460,21 @@ def start_collector(interval: float = 1.0) -> None:
 def stop_collector() -> None:
     """
     Stop the background entropy collector thread.
-    
+
     Call this before your application exits to cleanly shut down
     the collector thread.
-    
+
     Example:
         >>> import trueentropy
         >>> trueentropy.stop_collector()
     """
     global _collector_running
-    
+
     if not _collector_running:
         return  # Not running
-    
+
     from trueentropy.collector import stop_background_collector
+
     stop_background_collector()
     _collector_running = False
 
@@ -485,10 +487,10 @@ def stop_collector() -> None:
 def get_pool() -> EntropyPool:
     """
     Get the global entropy pool instance.
-    
+
     This is useful for advanced users who want to inspect or
     manipulate the pool directly.
-    
+
     Returns:
         The global EntropyPool instance
     """
@@ -498,10 +500,10 @@ def get_pool() -> EntropyPool:
 def get_tap() -> EntropyTap:
     """
     Get the global entropy tap instance.
-    
+
     This is useful for advanced users who want to use the tap
     directly or create their own tap with custom settings.
-    
+
     Returns:
         The global EntropyTap instance
     """

@@ -23,12 +23,12 @@ from different sources and feed it into the entropy pool.
 """
 
 from trueentropy.harvesters.base import BaseHarvester
-from trueentropy.harvesters.timing import TimingHarvester
-from trueentropy.harvesters.network import NetworkHarvester
-from trueentropy.harvesters.system import SystemHarvester
 from trueentropy.harvesters.external import ExternalHarvester
-from trueentropy.harvesters.weather import WeatherHarvester
+from trueentropy.harvesters.network import NetworkHarvester
 from trueentropy.harvesters.radioactive import RadioactiveHarvester
+from trueentropy.harvesters.system import SystemHarvester
+from trueentropy.harvesters.timing import TimingHarvester
+from trueentropy.harvesters.weather import WeatherHarvester
 
 __all__ = [
     "BaseHarvester",

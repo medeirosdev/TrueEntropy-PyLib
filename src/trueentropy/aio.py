@@ -28,11 +28,11 @@ in asyncio applications.
 from __future__ import annotations
 
 import asyncio
-from typing import Any, MutableSequence, Sequence, TypeVar
+from collections.abc import MutableSequence, Sequence
+from typing import Any, TypeVar
 
 from trueentropy.pool import EntropyPool
 from trueentropy.tap import EntropyTap
-
 
 T = TypeVar("T")
 
@@ -58,10 +58,10 @@ def _get_lock() -> asyncio.Lock:
 async def random() -> float:
     """
     Async version of trueentropy.random().
-    
+
     Returns:
         A float value where 0.0 <= value < 1.0
-    
+
     Example:
         >>> import asyncio
         >>> import trueentropy.aio as te
@@ -77,11 +77,11 @@ async def random() -> float:
 async def randint(a: int, b: int) -> int:
     """
     Async version of trueentropy.randint().
-    
+
     Args:
         a: Lower bound (inclusive)
         b: Upper bound (inclusive)
-    
+
     Returns:
         Random integer in [a, b]
     """
@@ -93,7 +93,7 @@ async def randint(a: int, b: int) -> int:
 async def randbool() -> bool:
     """
     Async version of trueentropy.randbool().
-    
+
     Returns:
         True or False with equal probability
     """
@@ -105,10 +105,10 @@ async def randbool() -> bool:
 async def randbytes(n: int) -> bytes:
     """
     Async version of trueentropy.randbytes().
-    
+
     Args:
         n: Number of bytes to generate
-    
+
     Returns:
         A bytes object of length n
     """
@@ -120,10 +120,10 @@ async def randbytes(n: int) -> bytes:
 async def choice(seq: Sequence[T]) -> T:
     """
     Async version of trueentropy.choice().
-    
+
     Args:
         seq: A non-empty sequence
-    
+
     Returns:
         A randomly selected element
     """
@@ -135,7 +135,7 @@ async def choice(seq: Sequence[T]) -> T:
 async def shuffle(seq: MutableSequence[Any]) -> None:
     """
     Async version of trueentropy.shuffle().
-    
+
     Args:
         seq: A mutable sequence to shuffle in-place
     """
@@ -147,11 +147,11 @@ async def shuffle(seq: MutableSequence[Any]) -> None:
 async def sample(seq: Sequence[T], k: int) -> list[T]:
     """
     Async version of trueentropy.sample().
-    
+
     Args:
         seq: The sequence to sample from
         k: Number of unique elements to select
-    
+
     Returns:
         A list of k unique elements
     """
@@ -163,7 +163,7 @@ async def sample(seq: Sequence[T], k: int) -> list[T]:
 async def random_uuid() -> str:
     """
     Async version of trueentropy.random_uuid().
-    
+
     Returns:
         A UUID v4 string
     """
@@ -175,19 +175,17 @@ async def random_uuid() -> str:
 async def random_token(length: int = 32, encoding: str = "hex") -> str:
     """
     Async version of trueentropy.random_token().
-    
+
     Args:
         length: Number of random bytes
         encoding: 'hex' or 'base64'
-    
+
     Returns:
         A random token string
     """
     async with _get_lock():
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, _async_tap.random_token, length, encoding
-        )
+        return await loop.run_in_executor(None, _async_tap.random_token, length, encoding)
 
 
 async def random_password(
@@ -196,16 +194,16 @@ async def random_password(
     include_uppercase: bool = True,
     include_lowercase: bool = True,
     include_digits: bool = True,
-    include_symbols: bool = True
+    include_symbols: bool = True,
 ) -> str:
     """
     Async version of trueentropy.random_password().
-    
+
     Args:
         length: Password length
         charset: Custom character set
         include_*: Character type flags
-    
+
     Returns:
         A random password string
     """
@@ -214,9 +212,13 @@ async def random_password(
         return await loop.run_in_executor(
             None,
             lambda: _async_tap.random_password(
-                length, charset, include_uppercase,
-                include_lowercase, include_digits, include_symbols
-            )
+                length,
+                charset,
+                include_uppercase,
+                include_lowercase,
+                include_digits,
+                include_symbols,
+            ),
         )
 
 
@@ -239,15 +241,11 @@ async def gauss(mu: float = 0.0, sigma: float = 1.0) -> float:
         return await loop.run_in_executor(None, _async_tap.gauss, mu, sigma)
 
 
-async def triangular(
-    low: float = 0.0, high: float = 1.0, mode: float | None = None
-) -> float:
+async def triangular(low: float = 0.0, high: float = 1.0, mode: float | None = None) -> float:
     """Async version of trueentropy.triangular()."""
     async with _get_lock():
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, _async_tap.triangular, low, high, mode
-        )
+        return await loop.run_in_executor(None, _async_tap.triangular, low, high, mode)
 
 
 async def exponential(lambd: float = 1.0) -> float:
@@ -261,9 +259,7 @@ async def weighted_choice(seq: Sequence[T], weights: Sequence[float]) -> T:
     """Async version of trueentropy.weighted_choice()."""
     async with _get_lock():
         loop = asyncio.get_event_loop()
-        return await loop.run_in_executor(
-            None, _async_tap.weighted_choice, seq, weights
-        )
+        return await loop.run_in_executor(None, _async_tap.weighted_choice, seq, weights)
 
 
 # =============================================================================
