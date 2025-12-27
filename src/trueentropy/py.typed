@@ -1,0 +1,17 @@
+# =============================================================================
+# TrueEntropy - Type Stubs
+# =============================================================================
+#
+# This file provides type hints for the public API. It ensures that IDEs
+# and type checkers can properly analyze code that uses TrueEntropy.
+#
+# =============================================================================
+
+"""Type stub file for trueentropy package."""
+
+from typing import Any, MutableSequence, Sequence, TypeVar
+
+T = TypeVar("T")
+
+# Indicate this package is typed
+__all__ = ["__version__"]
