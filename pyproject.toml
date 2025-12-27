@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "trueentropy"
-version = "0.1.0"
+version = "0.1.1"
 description = "True randomness from real-world entropy sources - harness chaos from network latency, system jitter, seismic activity, and financial markets"
 readme = "README.md"
 license = "MIT"
