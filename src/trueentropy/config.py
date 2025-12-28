@@ -27,7 +27,7 @@ sources and support offline mode operation.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any
 
 # -----------------------------------------------------------------------------
 # Source Metadata
