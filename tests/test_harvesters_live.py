@@ -185,7 +185,7 @@ class TestOfflineHarvesters:
         harvester = TimingHarvester(num_samples=32)
 
         results = []
-        for i in range(5):
+        for _ in range(5):
             result = harvester.collect()
             results.append(result.data)
             time.sleep(0.01)  # Small delay between samples
@@ -428,7 +428,7 @@ class TestHarvesterConfiguration:
 
 
 @pytest.fixture(scope="session", autouse=True)
-def final_report(request):
+def final_report():
     """Print final performance report after all tests complete."""
     yield
 

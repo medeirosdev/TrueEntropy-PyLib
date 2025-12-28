@@ -12,10 +12,9 @@
 # - Distribution uniformity
 #
 # =============================================================================
+"""Tests for the EntropyTap class."""
 
 from __future__ import annotations
-
-"""Tests for the EntropyTap class."""
 
 import math
 from collections import Counter

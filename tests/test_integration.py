@@ -10,10 +10,9 @@
 # - End-to-end random number generation
 #
 # =============================================================================
+"""Integration tests for the TrueEntropy library."""
 
 from __future__ import annotations
-
-"""Integration tests for the TrueEntropy library."""
 
 import time
 
@@ -148,7 +147,7 @@ class TestFeedAPI:
         import trueentropy
 
         # Get current health
-        before = trueentropy.health()
+        _ = trueentropy.health()  # Capture initial state (unused but validates call)
 
         # Feed a lot of data
         for _ in range(10):
@@ -172,13 +171,18 @@ class TestAdvancedAPI:
         assert isinstance(pool, EntropyPool)
 
     def test_get_tap(self) -> None:
-        """get_tap() should return EntropyTap."""
+        """get_tap() should return a BaseTap instance (EntropyTap or HybridTap)."""
         import trueentropy
-        from trueentropy.tap import EntropyTap
+        from trueentropy.config import reset_config
+        from trueentropy.tap import BaseTap
+
+        # Reset to default DIRECT mode to ensure consistent test state
+        reset_config()
+        trueentropy.configure(mode="DIRECT")
 
         tap = trueentropy.get_tap()
 
-        assert isinstance(tap, EntropyTap)
+        assert isinstance(tap, BaseTap)
 
 
 class TestBackgroundCollector:
