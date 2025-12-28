@@ -5,6 +5,31 @@ All notable changes to TrueEntropy will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.1] - 2025-12-27
+
+### Added
+
+#### Offline Mode
+- `configure(offline_mode=True)` - Disable all network-dependent harvesters
+- `get_config()` - Get current configuration
+- `reset_config()` - Reset to defaults
+- `TrueEntropyConfig` - Configuration dataclass with per-harvester flags
+
+#### Enhanced Health Monitoring
+- `health()` now returns `sources` dict with status of each harvester
+- `health()` now returns `offline_mode` boolean
+- `print_health_report()` displays source status table
+
+#### Comprehensive Testing
+- `test_harvesters_live.py` - Live tests for all harvesters with latency metrics
+- Performance benchmarks with detailed reporting
+- `BENCHMARKS.md` - Historical benchmark data
+
+### Changed
+- `start_background_collector()` now respects global config
+- `collect_once()` now respects global config
+- Added weather and radioactive harvesters to collector
+
 ## [0.1.0] - 2025-12-27
 
 ### Added
