@@ -11,10 +11,9 @@
 # - Edge cases
 #
 # =============================================================================
+"""Tests for the EntropyPool class."""
 
 from __future__ import annotations
-
-"""Tests for the EntropyPool class."""
 
 import threading
 import time

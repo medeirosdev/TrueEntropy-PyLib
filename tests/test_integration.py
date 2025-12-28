@@ -10,10 +10,9 @@
 # - End-to-end random number generation
 #
 # =============================================================================
+"""Integration tests for the TrueEntropy library."""
 
 from __future__ import annotations
-
-"""Integration tests for the TrueEntropy library."""
 
 import time
 
@@ -148,7 +147,7 @@ class TestFeedAPI:
         import trueentropy
 
         # Get current health
-        before = trueentropy.health()
+        _ = trueentropy.health()  # Capture initial state (unused but validates call)
 
         # Feed a lot of data
         for _ in range(10):
