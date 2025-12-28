@@ -186,10 +186,19 @@ class TestAdvancedAPI:
 class TestBackgroundCollector:
     """Test background collector functionality."""
     
+    def setup_method(self) -> None:
+        """Reset config and stop collector before each test."""
+        import trueentropy
+        # Use offline mode for faster tests (no network harvesters blocking)
+        trueentropy.configure(offline_mode=True)
+        trueentropy.stop_collector()
+        time.sleep(0.1)
+    
     def teardown_method(self) -> None:
         """Ensure collector is stopped after each test."""
         import trueentropy
         trueentropy.stop_collector()
+        trueentropy.reset_config()  # Reset config for next test
         time.sleep(0.1)  # Give time for thread to stop
     
     def test_start_and_stop_collector(self) -> None:
@@ -201,9 +210,9 @@ class TestBackgroundCollector:
         trueentropy.stop_collector()
         time.sleep(0.1)
         
-        # Start collector
+        # Start collector (uses offline mode from setup_method)
         trueentropy.start_collector(interval=0.5)
-        time.sleep(0.1)  # Give time for thread to start
+        time.sleep(0.2)  # Give time for thread to start
         
         # Should be running
         assert is_collector_running()
@@ -213,7 +222,7 @@ class TestBackgroundCollector:
         
         # Should be stopped
         # Give it a moment to stop
-        time.sleep(0.2)
+        time.sleep(0.3)
         assert not is_collector_running()
     
     def test_collector_feeds_pool(self) -> None:
@@ -227,15 +236,15 @@ class TestBackgroundCollector:
         pool = trueentropy.get_pool()
         initial_fed = pool.total_fed
         
-        # Start collector with fast interval
+        # Start collector with fast interval (uses offline mode)
         trueentropy.start_collector(interval=0.2)
         
         # Wait for some collections
-        time.sleep(0.6)
+        time.sleep(0.8)
         
         # Stop collector
         trueentropy.stop_collector()
-        time.sleep(0.1)
+        time.sleep(0.2)
         
         # Should have fed some data
         assert pool.total_fed > initial_fed
