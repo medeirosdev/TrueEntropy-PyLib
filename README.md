@@ -169,7 +169,6 @@ import trueentropy
 trueentropy.configure(mode="HYBRID", hybrid_reseed_interval=60.0)
 
 # Generate numbers at max speed
-# Generate numbers at max speed
 # The internal PRNG is automatically re-seeded from the entropy pool
 for _ in range(1000000):
    val = trueentropy.random()
@@ -316,10 +315,14 @@ True random numbers from quantum phenomena:
 
 | Function | Description |
 |----------|-------------|
+| `configure(...)` | Set mode (DIRECT/HYBRID), offline_mode, enable sources |
+| `reset_config()` | Reset configuration to defaults |
 | `health()` | Returns entropy pool health status |
 | `start_collector(interval)` | Starts background entropy collection |
 | `stop_collector()` | Stops background collection |
 | `feed(data)` | Manually feed entropy into the pool |
+| `get_tap()` | Get current tap instance (EntropyTap or HybridTap) |
+| `get_pool()` | Get the global entropy pool instance |
 
 ## How It Works
 
@@ -345,7 +348,7 @@ True random numbers from quantum phenomena:
 |                          v                                  |
 |                   +-----------+                             |
 |                   | EXTRACTOR |  Secure extraction          |
-|                   |   (Tap)   |  Depletion protection       |
+|                   |   (Tap)   |  DIRECT or HYBRID mode      |
 |                   +-----+-----+                             |
 |                         v                                   |
 |         +---------------+--------------+                    |
