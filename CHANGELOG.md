@@ -5,6 +5,31 @@ All notable changes to TrueEntropy will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0] - 2025-12-28
+
+### Added
+
+#### Hybrid Mode
+- `configure(mode="HYBRID")` - Switch to high-performance PRNG mode
+- `HybridTap` class - PRNG seeded by true entropy from the pool
+- `hybrid_reseed_interval` config - Control reseed frequency (default: 60s)
+- 83x faster than DIRECT mode (~5M ops/sec vs ~60K ops/sec)
+
+#### Architecture Improvements
+- `BaseTap` abstract class - Common interface for tap implementations
+- `get_tap()` function - Get current tap instance (EntropyTap or HybridTap)
+- Mode switching via `configure(mode="DIRECT"|"HYBRID")`
+
+#### Documentation
+- ARCHITECTURE.md updated with Operation Modes section and diagrams
+- README.md updated with Hybrid Mode usage and tuning guidelines
+- Comprehensive demo script in `examples/demo_comprehensive.py`
+
+### Changed
+- `EntropyTap` now inherits from `BaseTap`
+- Global `_tap` can now be either `EntropyTap` or `HybridTap`
+- `configure()` now supports `mode` and `hybrid_reseed_interval` parameters
+
 ## [0.1.1] - 2025-12-27
 
 ### Added
