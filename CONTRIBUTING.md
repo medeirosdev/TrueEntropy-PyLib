@@ -158,4 +158,4 @@ class MyHarvester(BaseHarvester):
 
 Feel free to open an issue with the "question" label or reach out to the maintainers.
 
-Thank you for contributing! 🙏
+Obrigado de coração por contribuir! Tmj! 🙏
