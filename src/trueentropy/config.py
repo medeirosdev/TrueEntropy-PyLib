@@ -27,6 +27,7 @@ sources and support offline mode operation.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any, Literal
 
 # -----------------------------------------------------------------------------
 # Source Metadata
@@ -136,7 +137,7 @@ class TrueEntropyConfig:
         Returns:
             Set of disabled source names
         """
-        return ALL_SOURCES - self.enabled_sources
+        return set(ALL_SOURCES - self.enabled_sources)
 
     # -------------------------------------------------------------------------
     # Methods
@@ -166,7 +167,7 @@ class TrueEntropyConfig:
             "requires_network": source in NETWORK_SOURCES,
         }
 
-    def copy(self, **changes) -> TrueEntropyConfig:
+    def copy(self, **changes: Any) -> TrueEntropyConfig:
         """
         Create a copy of this config with optional changes.
 
