@@ -1,9 +1,12 @@
 # TrueEntropy 🎲
 
-[![PyPI version](https://badge.fury.io/py/trueentropy.svg)](https://badge.fury.io/py/trueentropy)
+[![CI](https://github.com/medeirosdev/TrueEntropy-PyLib/actions/workflows/ci.yml/badge.svg)](https://github.com/medeirosdev/TrueEntropy-PyLib/actions/workflows/ci.yml)
+[![PyPI version](https://badge.fury.io/py/trueentropy.svg)](https://pypi.org/project/trueentropy/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/trueentropy.svg)](https://pypi.org/project/trueentropy/)
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 
 **True randomness from real-world entropy sources.**
 
@@ -74,6 +77,79 @@ for _ in range(1000):
 # Stop when done
 trueentropy.stop_collector()
 ```
+
+## Offline Mode
+
+TrueEntropy can operate without network access using local entropy sources only.
+
+### Sources by Network Requirement
+
+| Source | Requires Network | Description |
+|--------|------------------|-------------|
+| **Timing Jitter** | ❌ No | CPU timing variations |
+| **System State** | ❌ No | RAM, processes, CPU metrics |
+| **Network Latency** | ✅ Yes | Ping response times |
+| **External APIs** | ✅ Yes | Earthquakes, crypto prices |
+| **Weather Data** | ✅ Yes | OpenWeatherMap / wttr.in |
+| **Quantum Random** | ✅ Yes | random.org / ANU QRNG |
+
+### Enabling Offline Mode
+
+```python
+import trueentropy
+
+# Enable offline mode (disables all network-dependent sources)
+trueentropy.configure(offline_mode=True)
+
+# Generate random numbers using local sources only
+value = trueentropy.random()
+number = trueentropy.randint(1, 100)
+
+# Check which sources are active
+health = trueentropy.health()
+print(f"Offline mode: {health['offline_mode']}")
+for source, info in health['sources'].items():
+    status = "✓" if info['enabled'] else "○"
+    print(f"  {status} {source}")
+```
+
+### Selective Source Configuration
+
+```python
+import trueentropy
+
+# Disable only specific sources
+trueentropy.configure(
+    enable_weather=False,      # Disable weather API
+    enable_radioactive=False,  # Disable quantum sources
+)
+
+# Or enable only fast local sources
+trueentropy.configure(
+    offline_mode=True,         # Disable all network sources
+    enable_timing=True,        # Keep timing jitter
+    enable_system=True,        # Keep system state
+)
+
+# Reset to defaults (all sources enabled)
+trueentropy.reset_config()
+```
+
+### Health Monitoring in Offline Mode
+
+```python
+from trueentropy import get_pool
+from trueentropy.health import print_health_report
+
+# Configure offline mode
+trueentropy.configure(offline_mode=True)
+
+# View detailed health report with source status
+print_health_report(get_pool())
+```
+
+> **Note**: Offline mode provides reduced entropy diversity. For security-critical applications, consider using all available sources when network access is available.
+
 
 ## Advanced Features
 
