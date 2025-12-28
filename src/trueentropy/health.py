@@ -297,4 +297,3 @@ def print_health_report(pool: EntropyPool) -> None:
     print(f"║ {emoji} {health['recommendation'][:40]:40}║")
     print("╚══════════════════════════════════════════╝")
     print()
-

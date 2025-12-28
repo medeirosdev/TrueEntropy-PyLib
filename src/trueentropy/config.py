@@ -82,8 +82,7 @@ class TrueEntropyConfig:
         # Ensure at least one source is enabled
         if not any(self.enabled_sources):
             raise ValueError(
-                "At least one entropy source must be enabled. "
-                "Cannot disable all harvesters."
+                "At least one entropy source must be enabled. " "Cannot disable all harvesters."
             )
 
     # -------------------------------------------------------------------------
@@ -97,12 +96,14 @@ class TrueEntropyConfig:
 
         Returns True if all network-dependent sources are disabled.
         """
-        return not any([
-            self.enable_network,
-            self.enable_external,
-            self.enable_weather,
-            self.enable_radioactive,
-        ])
+        return not any(
+            [
+                self.enable_network,
+                self.enable_external,
+                self.enable_weather,
+                self.enable_radioactive,
+            ]
+        )
 
     @property
     def enabled_sources(self) -> set[str]:
@@ -176,6 +177,7 @@ class TrueEntropyConfig:
             New TrueEntropyConfig instance
         """
         from dataclasses import asdict
+
         current = asdict(self)
         current.update(changes)
         return TrueEntropyConfig(**current)
