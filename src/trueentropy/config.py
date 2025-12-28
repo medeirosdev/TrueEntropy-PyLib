@@ -28,7 +28,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-
 # -----------------------------------------------------------------------------
 # Source Metadata
 # -----------------------------------------------------------------------------
@@ -166,7 +165,7 @@ class TrueEntropyConfig:
             "requires_network": source in NETWORK_SOURCES,
         }
 
-    def copy(self, **changes) -> "TrueEntropyConfig":
+    def copy(self, **changes) -> TrueEntropyConfig:
         """
         Create a copy of this config with optional changes.
 
