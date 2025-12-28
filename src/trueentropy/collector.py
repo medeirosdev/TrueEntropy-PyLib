@@ -33,11 +33,14 @@ import logging
 import threading
 import time
 
+from trueentropy.config import TrueEntropyConfig, get_config
 from trueentropy.harvesters.base import BaseHarvester
 from trueentropy.harvesters.external import ExternalHarvester
 from trueentropy.harvesters.network import NetworkHarvester
+from trueentropy.harvesters.radioactive import RadioactiveHarvester
 from trueentropy.harvesters.system import SystemHarvester
 from trueentropy.harvesters.timing import TimingHarvester
+from trueentropy.harvesters.weather import WeatherHarvester
 from trueentropy.pool import EntropyPool
 
 # -----------------------------------------------------------------------------
@@ -66,8 +69,7 @@ _stop_event: threading.Event | None = None
 def start_background_collector(
     pool: EntropyPool,
     interval: float = 1.0,
-    enable_network: bool = True,
-    enable_external: bool = True,
+    config: TrueEntropyConfig | None = None,
 ) -> None:
     """
     Start the background entropy collector thread.
@@ -78,19 +80,18 @@ def start_background_collector(
     Args:
         pool: The EntropyPool to feed entropy into
         interval: Seconds between collection cycles (default: 1.0)
-        enable_network: Whether to enable network harvester (default: True)
-        enable_external: Whether to enable external API harvester (default: True)
+        config: Configuration to use (default: global config)
 
     Note:
         - Only one collector can run at a time
         - The collector is a daemon thread (exits when main program exits)
         - Call stop_background_collector() for clean shutdown
+        - Respects the global configuration set by trueentropy.configure()
 
     Example:
-        >>> from trueentropy import get_pool
-        >>> from trueentropy.collector import start_background_collector
-        >>> pool = get_pool()
-        >>> start_background_collector(pool, interval=2.0)
+        >>> import trueentropy
+        >>> trueentropy.configure(offline_mode=True)  # Use only local sources
+        >>> trueentropy.start_collector(interval=2.0)
     """
     global _collector_thread, _stop_event
 
@@ -99,20 +100,34 @@ def start_background_collector(
         logger.warning("Background collector is already running")
         return
 
+    # Use provided config or global config
+    cfg = config or get_config()
+
     # Create stop event
     _stop_event = threading.Event()
 
-    # Create and configure harvesters
-    harvesters: list[BaseHarvester] = [
-        TimingHarvester(),
-        SystemHarvester(),
-    ]
+    # Create harvesters based on configuration
+    harvesters: list[BaseHarvester] = []
 
-    if enable_network:
+    # Offline sources (always process if enabled)
+    if cfg.enable_timing:
+        harvesters.append(TimingHarvester())
+    if cfg.enable_system:
+        harvesters.append(SystemHarvester())
+
+    # Network-dependent sources
+    if cfg.enable_network:
         harvesters.append(NetworkHarvester())
-
-    if enable_external:
+    if cfg.enable_external:
         harvesters.append(ExternalHarvester())
+    if cfg.enable_weather:
+        harvesters.append(WeatherHarvester())
+    if cfg.enable_radioactive:
+        harvesters.append(RadioactiveHarvester())
+
+    if not harvesters:
+        logger.warning("No harvesters enabled in configuration")
+        return
 
     # Create collector thread
     _collector_thread = threading.Thread(
@@ -124,8 +139,11 @@ def start_background_collector(
 
     # Start the thread
     _collector_thread.start()
+
+    mode = "OFFLINE" if cfg.offline_mode else "ONLINE"
     logger.info(
-        f"Background collector started with {len(harvesters)} harvesters, " f"interval={interval}s"
+        f"Background collector started ({mode}) with {len(harvesters)} harvesters, "
+        f"interval={interval}s"
     )
 
 
@@ -246,7 +264,7 @@ def _collector_loop(
     logger.debug("Collector loop exiting")
 
 
-def collect_once(pool: EntropyPool) -> int:
+def collect_once(pool: EntropyPool, config: TrueEntropyConfig | None = None) -> int:
     """
     Perform a single collection cycle.
 
@@ -255,16 +273,27 @@ def collect_once(pool: EntropyPool) -> int:
 
     Args:
         pool: The EntropyPool to feed entropy into
+        config: Configuration to use (default: global config)
 
     Returns:
         Total entropy bits collected
     """
-    harvesters: list[BaseHarvester] = [
-        TimingHarvester(),
-        SystemHarvester(),
-        NetworkHarvester(),
-        ExternalHarvester(),
-    ]
+    cfg = config or get_config()
+
+    harvesters: list[BaseHarvester] = []
+
+    if cfg.enable_timing:
+        harvesters.append(TimingHarvester())
+    if cfg.enable_system:
+        harvesters.append(SystemHarvester())
+    if cfg.enable_network:
+        harvesters.append(NetworkHarvester())
+    if cfg.enable_external:
+        harvesters.append(ExternalHarvester())
+    if cfg.enable_weather:
+        harvesters.append(WeatherHarvester())
+    if cfg.enable_radioactive:
+        harvesters.append(RadioactiveHarvester())
 
     total_bits = 0
 
