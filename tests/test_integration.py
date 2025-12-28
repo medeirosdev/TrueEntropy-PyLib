@@ -171,13 +171,18 @@ class TestAdvancedAPI:
         assert isinstance(pool, EntropyPool)
 
     def test_get_tap(self) -> None:
-        """get_tap() should return EntropyTap."""
+        """get_tap() should return a BaseTap instance (EntropyTap or HybridTap)."""
         import trueentropy
-        from trueentropy.tap import EntropyTap
+        from trueentropy.config import reset_config
+        from trueentropy.tap import BaseTap
+
+        # Reset to default DIRECT mode to ensure consistent test state
+        reset_config()
+        trueentropy.configure(mode="DIRECT")
 
         tap = trueentropy.get_tap()
 
-        assert isinstance(tap, EntropyTap)
+        assert isinstance(tap, BaseTap)
 
 
 class TestBackgroundCollector:
