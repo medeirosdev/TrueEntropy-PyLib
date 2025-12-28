@@ -25,11 +25,25 @@ from __future__ import annotations
 import time
 from typing import Literal, TypedDict
 
+from trueentropy.config import get_config
 from trueentropy.pool import EntropyPool
 
 # -----------------------------------------------------------------------------
 # Type Definitions
 # -----------------------------------------------------------------------------
+
+
+class SourceStatus(TypedDict):
+    """
+    Status of an individual entropy source.
+
+    Attributes:
+        enabled: Whether this source is enabled in config
+        requires_network: Whether this source needs network access
+    """
+
+    enabled: bool
+    requires_network: bool
 
 
 class HealthStatus(TypedDict):
@@ -43,6 +57,8 @@ class HealthStatus(TypedDict):
         pool_utilization: Percentage of pool capacity used (0-100)
         time_since_feed: Seconds since last entropy feed
         recommendation: Suggested action for the user
+        sources: Status of each entropy source
+        offline_mode: Whether running in offline mode (no network sources)
     """
 
     score: int
@@ -51,6 +67,8 @@ class HealthStatus(TypedDict):
     pool_utilization: float
     time_since_feed: float
     recommendation: str
+    sources: dict[str, SourceStatus]
+    offline_mode: bool
 
 
 # -----------------------------------------------------------------------------
@@ -173,6 +191,20 @@ def entropy_health(pool: EntropyPool) -> HealthStatus:
             )
 
     # -------------------------------------------------------------------------
+    # Build Sources Status
+    # -------------------------------------------------------------------------
+
+    config = get_config()
+    sources: dict[str, SourceStatus] = {}
+
+    for source_name in ["timing", "system", "network", "external", "weather", "radioactive"]:
+        info = config.get_source_info(source_name)
+        sources[source_name] = SourceStatus(
+            enabled=info["enabled"],
+            requires_network=info["requires_network"],
+        )
+
+    # -------------------------------------------------------------------------
     # Build and Return Result
     # -------------------------------------------------------------------------
 
@@ -183,6 +215,8 @@ def entropy_health(pool: EntropyPool) -> HealthStatus:
         pool_utilization=round(pool_utilization, 2),
         time_since_feed=round(time_since_feed, 2),
         recommendation=recommendation,
+        sources=sources,
+        offline_mode=config.offline_mode,
     )
 
 
@@ -236,7 +270,31 @@ def print_health_report(pool: EntropyPool) -> None:
         f"({health['pool_utilization']:.1f}%)          ║"
     )
     print(f"║ Last Feed:    {health['time_since_feed']:.1f} seconds ago            ║")
+
+    # Show offline mode status
+    if health["offline_mode"]:
+        print("║ Mode:         OFFLINE (local sources)    ║")
+    else:
+        print("║ Mode:         ONLINE (all sources)       ║")
+
+    print("╠══════════════════════════════════════════╣")
+    print("║          Entropy Sources Status          ║")
+    print("╠══════════════════════════════════════════╣")
+
+    # Display each source status
+    for source_name, source_info in health["sources"].items():
+        if source_info["enabled"]:
+            status_icon = "✓"
+            status_text = "enabled "
+        else:
+            status_icon = "○"
+            status_text = "disabled"
+
+        network_tag = " (net)" if source_info["requires_network"] else "      "
+        print(f"║ {status_icon} {source_name:12} {status_text}{network_tag}       ║")
+
     print("╠══════════════════════════════════════════╣")
     print(f"║ {emoji} {health['recommendation'][:40]:40}║")
     print("╚══════════════════════════════════════════╝")
     print()
+
