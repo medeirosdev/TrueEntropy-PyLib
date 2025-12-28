@@ -40,7 +40,7 @@ from __future__ import annotations
 # -----------------------------------------------------------------------------
 # Version Information
 # -----------------------------------------------------------------------------
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "TrueEntropy Contributors"
 __license__ = "MIT"
 
@@ -56,6 +56,12 @@ if TYPE_CHECKING:
 # -----------------------------------------------------------------------------
 # Internal Module Imports
 # -----------------------------------------------------------------------------
+from trueentropy.config import (
+    TrueEntropyConfig,
+    configure,
+    get_config,
+    reset_config,
+)
 from trueentropy.health import HealthStatus, entropy_health
 from trueentropy.pool import EntropyPool
 from trueentropy.tap import EntropyTap
@@ -536,6 +542,10 @@ __all__ = [
     "random_uuid",
     "random_token",
     "random_password",
+    # Configuration
+    "configure",
+    "get_config",
+    "reset_config",
     # Entropy management
     "health",
     "feed",
@@ -548,4 +558,5 @@ __all__ = [
     "EntropyPool",
     "EntropyTap",
     "HealthStatus",
+    "TrueEntropyConfig",
 ]
