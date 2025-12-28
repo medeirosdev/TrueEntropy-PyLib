@@ -48,7 +48,7 @@ __license__ = "MIT"
 # Type Imports (for type hints)
 # -----------------------------------------------------------------------------
 from collections.abc import MutableSequence, Sequence
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any, Literal, TypeVar
 
 if TYPE_CHECKING:
     pass
@@ -56,15 +56,16 @@ if TYPE_CHECKING:
 # -----------------------------------------------------------------------------
 # Internal Module Imports
 # -----------------------------------------------------------------------------
+import trueentropy.config as _config_module
 from trueentropy.config import (
     TrueEntropyConfig,
-    configure,
     get_config,
     reset_config,
 )
 from trueentropy.health import HealthStatus, entropy_health
+from trueentropy.hybrid import HybridTap
 from trueentropy.pool import EntropyPool
-from trueentropy.tap import EntropyTap
+from trueentropy.tap import BaseTap, EntropyTap
 
 # -----------------------------------------------------------------------------
 # Type Variables for Generic Functions
@@ -78,10 +79,94 @@ T = TypeVar("T")
 # Users can also create their own instances if needed.
 
 _pool: EntropyPool = EntropyPool()
-_tap: EntropyTap = EntropyTap(_pool)
+# _tap is initialized with EntropyTap (DIRECT mode) by default
+_tap: BaseTap = EntropyTap(_pool)
 
 # Flag to track if background collector is running
 _collector_running: bool = False
+
+
+# -----------------------------------------------------------------------------
+# Configuration Helper
+# -----------------------------------------------------------------------------
+
+
+def _update_tap() -> None:
+    """
+    Update the global _tap instance based on current configuration.
+
+    Switches between EntropyTap (DIRECT) and HybridTap (HYBRID).
+    """
+    global _tap
+    config = get_config()
+
+    if config.mode == "HYBRID":
+        # Create new HybridTap if not already one
+        if not isinstance(_tap, HybridTap):
+            _tap = HybridTap(_pool, reseed_interval=config.hybrid_reseed_interval)
+        else:
+            # Update existing HybridTap interval
+            _tap._reseed_interval = config.hybrid_reseed_interval
+    else:
+        # Default to DIRECT mode (EntropyTap)
+        if not isinstance(_tap, EntropyTap):
+            _tap = EntropyTap(_pool)
+
+
+def configure(
+    *,
+    mode: Literal["DIRECT", "HYBRID"] | None = None,
+    hybrid_reseed_interval: float | None = None,
+    offline_mode: bool | None = None,
+    enable_timing: bool | None = None,
+    enable_system: bool | None = None,
+    enable_network: bool | None = None,
+    enable_external: bool | None = None,
+    enable_weather: bool | None = None,
+    enable_radioactive: bool | None = None,
+) -> TrueEntropyConfig:
+    """
+    Configure TrueEntropy globally.
+
+    This function updates the global configuration and switches operation mode
+    (DIRECT vs HYBRID) if requested.
+
+    Args:
+        mode: Operation mode ("DIRECT" or "HYBRID")
+        hybrid_reseed_interval: Seconds between re-seeds in HYBRID mode
+        offline_mode: If True, disables all network-dependent sources.
+        enable_timing: Enable/disable CPU timing harvester
+        enable_system: Enable/disable system state harvester
+        enable_network: Enable/disable network latency harvester
+        enable_external: Enable/disable external API harvester
+        enable_weather: Enable/disable weather data harvester
+        enable_radioactive: Enable/disable quantum randomness harvester
+
+    Returns:
+        The updated global configuration
+
+    Example:
+        >>> import trueentropy
+        >>> # Switch to Hybrid Mode (faster)
+        >>> trueentropy.configure(mode="HYBRID")
+    """
+    # Call the underlying config update
+    cfg = _config_module.configure(
+        mode=mode,
+        hybrid_reseed_interval=hybrid_reseed_interval,
+        offline_mode=offline_mode,
+        enable_timing=enable_timing,
+        enable_system=enable_system,
+        enable_network=enable_network,
+        enable_external=enable_external,
+        enable_weather=enable_weather,
+        enable_radioactive=enable_radioactive,
+    )
+
+    # Update the active tap based on new config
+    _update_tap()
+
+    return cfg
 
 
 # =============================================================================
@@ -93,9 +178,7 @@ def random() -> float:
     """
     Generate a random floating-point number in the range [0.0, 1.0).
 
-    This function extracts entropy from the pool and converts it to a
-    uniformly distributed float. The distribution is uniform, meaning
-    all values in the range are equally likely.
+    This function uses the currently configured tap (DIRECT or HYBRID).
 
     Returns:
         A float value where 0.0 <= value < 1.0
@@ -182,9 +265,8 @@ def randbytes(n: int) -> bytes:
     """
     Generate n random bytes.
 
-    This function extracts raw entropy from the pool and returns it
-    as a bytes object. Useful for generating cryptographic keys,
-    tokens, or other binary data.
+    This function extracts raw entropy (or PRNG bytes in Hybrid mode).
+    Useful for generating cryptographic keys, tokens, or other binary data.
 
     Args:
         n: The number of bytes to generate (must be positive)
@@ -208,8 +290,7 @@ def shuffle(seq: MutableSequence[Any]) -> None:
     """
     Shuffle a mutable sequence in-place.
 
-    Uses the Fisher-Yates shuffle algorithm with true random numbers
-    to ensure a uniform distribution of permutations.
+    Uses the Fisher-Yates shuffle algorithm.
 
     Args:
         seq: A mutable sequence (list) to shuffle in-place
@@ -503,15 +584,15 @@ def get_pool() -> EntropyPool:
     return _pool
 
 
-def get_tap() -> EntropyTap:
+def get_tap() -> BaseTap:
     """
     Get the global entropy tap instance.
 
     This is useful for advanced users who want to use the tap
-    directly or create their own tap with custom settings.
+    directly or inspect which implementation (BaseTap/HybridTap) is active.
 
     Returns:
-        The global EntropyTap instance
+        The global BaseTap instance (EntropyTap or HybridTap)
     """
     return _tap
 
@@ -557,6 +638,8 @@ __all__ = [
     # Classes (for type hints and advanced usage)
     "EntropyPool",
     "EntropyTap",
+    "HybridTap",
+    "BaseTap",
     "HealthStatus",
     "TrueEntropyConfig",
 ]

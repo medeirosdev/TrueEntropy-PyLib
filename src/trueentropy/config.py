@@ -27,7 +27,7 @@ sources and support offline mode operation.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Literal
 
 # -----------------------------------------------------------------------------
 # Source Metadata
@@ -72,6 +72,10 @@ class TrueEntropyConfig:
     enable_timing: bool = True
     enable_system: bool = True
 
+    # Mode configuration
+    mode: Literal["DIRECT", "HYBRID"] = "DIRECT"
+    hybrid_reseed_interval: float = 60.0
+
     # Network-dependent sources
     enable_network: bool = True
     enable_external: bool = True
@@ -80,11 +84,17 @@ class TrueEntropyConfig:
 
     def __post_init__(self) -> None:
         """Validate configuration after initialization."""
-        # Ensure at least one source is enabled
+        # Ensure at least one source is enabled (if in DIRECT mode or collecting)
         if not any(self.enabled_sources):
+            # In HYBRID mode, we technically need sources too for reseeding,
+            # but we could rely on os.urandom initial seed if desperate.
+            # For now, strict validation is safer.
             raise ValueError(
                 "At least one entropy source must be enabled. " "Cannot disable all harvesters."
             )
+
+        if self.hybrid_reseed_interval <= 0:
+            raise ValueError("hybrid_reseed_interval must be positive")
 
     # -------------------------------------------------------------------------
     # Properties
@@ -204,6 +214,8 @@ def get_config() -> TrueEntropyConfig:
 
 def configure(
     *,
+    mode: Literal["DIRECT", "HYBRID"] | None = None,
+    hybrid_reseed_interval: float | None = None,
     offline_mode: bool | None = None,
     enable_timing: bool | None = None,
     enable_system: bool | None = None,
@@ -216,10 +228,12 @@ def configure(
     Configure TrueEntropy globally.
 
     This function updates the global configuration used by all
-    entropy collection functions. You can either set offline_mode=True
+    entropy collection functions. You can switch modes, set offline_mode
     to disable all network sources, or configure individual sources.
 
     Args:
+        mode: Operation mode ("DIRECT" or "HYBRID")
+        hybrid_reseed_interval: Seconds between re-seeds in HYBRID mode
         offline_mode: If True, disables all network-dependent sources.
                      If False, enables all sources. If None, ignored.
         enable_timing: Enable/disable CPU timing harvester
@@ -234,15 +248,17 @@ def configure(
 
     Example:
         >>> import trueentropy
+        >>> # Enable hybrid mode for better performance
+        >>> trueentropy.configure(mode="HYBRID", hybrid_reseed_interval=120)
         >>> # Enable offline mode
         >>> trueentropy.configure(offline_mode=True)
-        >>> # Or disable specific sources
-        >>> trueentropy.configure(enable_weather=False, enable_radioactive=False)
     """
     global _global_config
 
     # Start with current config values
     new_config = {
+        "mode": _global_config.mode,
+        "hybrid_reseed_interval": _global_config.hybrid_reseed_interval,
         "enable_timing": _global_config.enable_timing,
         "enable_system": _global_config.enable_system,
         "enable_network": _global_config.enable_network,
@@ -250,6 +266,11 @@ def configure(
         "enable_weather": _global_config.enable_weather,
         "enable_radioactive": _global_config.enable_radioactive,
     }
+
+    if mode is not None:
+        new_config["mode"] = mode
+    if hybrid_reseed_interval is not None:
+        new_config["hybrid_reseed_interval"] = hybrid_reseed_interval
 
     # Handle offline_mode convenience flag
     if offline_mode is True:

@@ -149,6 +149,43 @@ print_health_report(get_pool())
 > **Note**: Offline mode provides reduced entropy diversity. For security-critical applications, consider using all available sources when network access is available.
 
 
+## Direct vs Hybrid Mode
+
+TrueEntropy offers two modes of operation to balance security and performance:
+
+| Mode | Entropy Source | Performance | Use Case |
+|------|---------------|-------------|----------|
+| **DIRECT** (Default) | Directly from entropy pool | Slower, blocking | Cryptographic keys, wallets, severe security |
+| **HYBRID** | PRNG seeded by pool | Extremely fast | Simulations, games, UI, general purpose |
+
+### Using Hybrid Mode
+
+Hybrid mode uses the TrueEntropy pool to periodically re-seed a fast pseudo-random number generator (PRNG). This provides the best of both worlds: the speed of standard Python random numbers with the entropy quality of our harvesters.
+
+```python
+import trueentropy
+
+# Configure Hybrid Mode (re-seed every 60 seconds)
+trueentropy.configure(mode="HYBRID", hybrid_reseed_interval=60.0)
+
+# Generate numbers at max speed
+# The internal PRNG is automatically re-seeded from the entropy pool
+for _ in range(1000000):
+   val = trueentropy.random()
+```
+
+### Tuning Hybrid Mode
+
+The `hybrid_reseed_interval` should be chosen based on your `offline_mode` setting:
+
+*   **Online (Default)**: Network harvesters take time to collect entropy (latency). Set the interval to **10.0s or higher** to allow the pool to refill between reseeds.
+*   **Offline (`offline_mode=True`)**: Local sources are near-instant. You can use lower intervals (e.g., **1.0s - 2.0s**) for frequent reseeding.
+
+> **Tip**: If `health()` reports degraded status with low entropy bits, increase your reseed interval.
+
+
+
+
 ## Advanced Features
 
 ### Async Support
@@ -278,10 +315,14 @@ True random numbers from quantum phenomena:
 
 | Function | Description |
 |----------|-------------|
+| `configure(...)` | Set mode (DIRECT/HYBRID), offline_mode, enable sources |
+| `reset_config()` | Reset configuration to defaults |
 | `health()` | Returns entropy pool health status |
 | `start_collector(interval)` | Starts background entropy collection |
 | `stop_collector()` | Stops background collection |
 | `feed(data)` | Manually feed entropy into the pool |
+| `get_tap()` | Get current tap instance (EntropyTap or HybridTap) |
+| `get_pool()` | Get the global entropy pool instance |
 
 ## How It Works
 
@@ -307,7 +348,7 @@ True random numbers from quantum phenomena:
 |                          v                                  |
 |                   +-----------+                             |
 |                   | EXTRACTOR |  Secure extraction          |
-|                   |   (Tap)   |  Depletion protection       |
+|                   |   (Tap)   |  DIRECT or HYBRID mode      |
 |                   +-----+-----+                             |
 |                         v                                   |
 |         +---------------+--------------+                    |

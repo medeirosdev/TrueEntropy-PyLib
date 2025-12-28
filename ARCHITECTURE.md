@@ -33,6 +33,80 @@ TrueEntropy harvests entropy from real-world sources and converts it into crypto
 
 ---
 
+## Operation Modes
+
+TrueEntropy supports two operation modes, selectable via `configure(mode=...)`:
+
+### Mode Comparison
+
+| Aspect | DIRECT Mode | HYBRID Mode |
+|--------|-------------|-------------|
+| **Speed** | ~60K ops/sec | ~5M ops/sec |
+| **Source** | Direct pool extraction | PRNG seeded by pool |
+| **Security** | Maximum (true random) | High (periodic reseed) |
+| **Use Case** | Crypto keys, wallets | Simulations, games |
+
+### DIRECT Mode (Default)
+
+Every call extracts fresh entropy directly from the pool:
+
+```
+trueentropy.random() ──► EntropyTap.random() ──► pool.extract(8) ──► float
+```
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                        DIRECT MODE                                  │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   random() ───► EntropyTap ───► Pool ───► 8 bytes ───► float       │
+│                                   │                                 │
+│                                   ▲                                 │
+│                              Harvesters                             │
+│                                                                     │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+### HYBRID Mode
+
+Uses a fast PRNG (Mersenne Twister) that re-seeds from the pool periodically:
+
+```
+trueentropy.random() ──► HybridTap.random() ──► PRNG.random() ──► float
+                                   │
+                                   └──► (every N seconds) ──► pool.extract(32) ──► PRNG.seed()
+```
+
+```
+┌────────────────────────────────────────────────────────────────────┐
+│                        HYBRID MODE                                  │
+├────────────────────────────────────────────────────────────────────┤
+│                                                                     │
+│   random() ───► HybridTap ───► PRNG (Mersenne Twister) ───► float   │
+│                     │                                               │
+│                     ▼ (periodic reseed)                             │
+│                   Pool ◄────── Harvesters                           │
+│                     │                                               │
+│                     └──► 32 bytes ──► PRNG.seed()                   │
+│                                                                     │
+└────────────────────────────────────────────────────────────────────┘
+```
+
+### Configuration
+
+```python
+import trueentropy
+
+# DIRECT mode (default) - maximum security
+trueentropy.configure(mode="DIRECT")
+
+# HYBRID mode - maximum performance
+trueentropy.configure(mode="HYBRID", hybrid_reseed_interval=60.0)
+
+# Combined: Hybrid + Offline (fast, no network)
+trueentropy.configure(mode="HYBRID", offline_mode=True)
+```
+
 ## Entropy Sources
 
 ### 1. Timing Jitter (timing.py)
@@ -300,7 +374,9 @@ Guarantees all N! permutations are equally probable.
 | Module | Purpose |
 |--------|---------|
 | `pool.py` | Accumulates and mixes entropy with SHA-256 |
-| `tap.py` | Extracts entropy and converts to types |
+| `tap.py` | `BaseTap` abstract class + `EntropyTap` (DIRECT mode) |
+| `hybrid.py` | `HybridTap` for HYBRID mode (PRNG seeded by pool) |
+| `config.py` | `TrueEntropyConfig` dataclass + `configure()` function |
 | `collector.py` | Background thread for automatic collection |
 | `health.py` | Monitors pool health (score 0-100) |
 | `harvesters/` | Collectors for different entropy sources |

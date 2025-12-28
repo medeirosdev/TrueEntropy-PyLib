@@ -96,3 +96,6 @@ Thumbs.db
 .env.local
 .env.*.local
 secrets.json
+
+# Demos
+demo_*.py
